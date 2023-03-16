@@ -79,13 +79,19 @@ app.post('/createUser', async (req,res)=>{
         //hashing password
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password,salt)
+        //end of hashing password
 
 
         //storing data into database
         const user = await User.create({name:name,email:email,birthDate:birthDate,password:hashedPassword,confirmPassword:confirmPassword,phoneNumber:phoneNumber})
+        //end of storing data into database
+        
+        //send email to the user
         emailCreatation(email,name)
+        
 
         //jenerate token after creation of user
+        // send token to the browser through cokie
         const userId = user._id
         const token = jwt.sign({userId},'secret',{expiresIn:60*60*24})
         res.cookie('token',token,{maxAge:1000*60*60*24,httpOnly:true})
@@ -99,9 +105,11 @@ app.post('/createUser', async (req,res)=>{
 })
 
 
-// creating email to the user
+// creating function that will send email to the, by using nodemailer package
 // https://developers.google.com/oauthplayground
+
 const emailCreatation = async (userEmail,name)=>{
+    
 let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
